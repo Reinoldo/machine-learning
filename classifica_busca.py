@@ -20,6 +20,8 @@ def carrega_busca():
 #agora no modo PANDAS
 import pandas as pd
 from sklearn.naive_bayes import MultinomialNB
+from collections import Counter
+
 data_frame = pd.read_csv('busca.csv')
 
 X = data_frame[['home', 'busca', 'logado']]
@@ -34,8 +36,8 @@ Y = Ydummies.values
 porcentagem_treino = 0.9
 porcentagem_teste = 0.1
 
-tamanho_treino = porcentagem_treino * len(X)
-tamanho_teste = porcentagem_teste * len(Y)
+tamanho_treino = int(porcentagem_treino * len(X))
+tamanho_teste = int(porcentagem_teste * len(Y))
 
 treina_dados = X[:tamanho_treino]
 treina_marcacoes = Y[:tamanho_treino]
@@ -48,21 +50,29 @@ modelo.fit(treina_dados, treina_marcacoes)
 
 resultado = modelo.predict(testa_dados)
 
-diferencas = resultado - testa_marcacoes
+acertos = (resultado == testa_marcacoes)
 
-acertos = [d for d in diferencas if d == 0]
 
-total_acertos = len(acertos)
-erros = [d for d in diferencas if d!=0]
 
-total_erros = len(erros)
+total_acertos = sum(acertos)
+#erros = [d for d in diferencas if d!=0]
+
+#total_erros = len(erros)
 total_elementos = len(testa_dados)
 
+# a eficacia do algoritmo que chuta tudo Sim ou Não
+acerto_de_um = list(Y).count('sim') # ou assim -> len(Y[Y=='sim'])
+acerto_de_zero = list(Y).count('nao') # ou assim -> len(Y[Y=='nao'])
+
+#fazendo o mesmo que as linhas 64 e 65 só que usando o Counter 
+acerto_base = max(Counter(testa_marcacoes).values())
+
+taxa_de_acerto_base = 100.0 * acerto_base / len(testa_marcacoes)
 
 taxa_de_acerto = 100.0 * total_acertos / total_elementos
-taxa_de_erro = 100.0 * total_erros / total_elementos
+#taxa_de_erro = 100.0 * total_erros / total_elementos
 
 
-print("taxa de acerto: ",  taxa_de_acerto, "%")
-print("taxa de erro: ",taxa_de_erro,"%")
+print("taxa de acerto base: ",  taxa_de_acerto_base, "%")
+print("taxa de acerto com algoritmo: ",taxa_de_acerto,"%")
 print("total de elementos testados: ",total_elementos)
